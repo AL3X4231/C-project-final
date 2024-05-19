@@ -101,6 +101,7 @@ int main() {
                             printf("type row");
                             scanf("%d",&row);
                             print_value_at_cell(df,row,columns);
+                            break;
 
                         case 8:
 

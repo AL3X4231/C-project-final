@@ -6,6 +6,7 @@
 #define ASC 0
 #define DESC 1
 
+
 COLUMN *create_column(ENUM_TYPE type, char *title) {
     COLUMN *col = malloc(sizeof(COLUMN));
     if (col == NULL) {
@@ -326,7 +327,13 @@ void fill_dataframe_user(DATAFRAME *df) {
                     break;
                 }
                 case STRUCTURE:
-                    // Logic for structured data
+                    int structure_values[] = {15, 16, 17, 10, 5, 100, 4, 55, 30, 18};
+                    if (j < sizeof(structure_values) / sizeof(structure_values[0])) {
+                        int value = structure_values[j];
+                        insert_value(df->columns[i], &value);
+                    } else {
+                        printf("Error: Row index exceeds predefined STRUCTURE size.\n");
+                    }
                     break;
                 default:
                     printf("Unsupported data type.\n");
@@ -409,7 +416,7 @@ void display_dataframe(DATAFRAME *df) {
                         printf("%s ", (char *)df->columns[j]->data[i]);
                     break;
                     case STRUCTURE:
-                        // Handle structured data
+                        printf("%d ", *(int *)df->columns[j]->data[i]);
                             break;
                     default:
                         printf("Unsupported data type\n");
@@ -498,13 +505,13 @@ void add_row_to_dataframe(DATAFRAME *df) {
                 break;
             }
             case STRUCTURE:{
-                int *value = malloc(sizeof(int));
-                if (value == NULL) {
-                    printf("Memory allocation failed.\n");
-                    exit(1);
+                int structure_values[] = {15, 16, 17, 10, 5, 100, 4, 55, 30, 18};
+                if (i < sizeof(structure_values) / sizeof(structure_values[0])) {
+                    int value = structure_values[df->num_rows];
+                    insert_value(df->columns[i], &value);
+                } else {
+                    printf("Error: Row index exceeds predefined STRUCTURE size.\n");
                 }
-                *value=1;
-                insert_value(df->columns[i], value);
                 break;
             }
             default:
@@ -585,8 +592,15 @@ void add_column_and_fill(DATAFRAME *df) {
                 break;
             }
             case STRUCTURE:
-
+                int structure_values[] = {15, 16, 17, 10, 5, 100, 4, 55, 30, 18};
+                    if (i < sizeof(structure_values) / sizeof(structure_values[0])) {
+                        int value = structure_values[i];
+                        insert_value(df->columns[i], &value);
+                    } else {
+                        printf("Error: Row index exceeds predefined STRUCTURE size.\n");
+                    }
                 break;
+
             default:
                 printf("Unsupported data type.\n");
                 break;
@@ -713,7 +727,6 @@ void print_value_at_cell(DATAFRAME *df,int row,int column) {
         break;
         case STRUCTURE:
             printf("%d ", *(int *)value_ptr);
-            // Logic for structured data
                 break;
         default:
             printf("Unsupported data type.\n");
@@ -795,7 +808,10 @@ int is_value_in_dataframe(DATAFRAME *df, void *value) {
                     break;
                 }
                 case STRUCTURE:
-                    // Logic for structured data
+                    int *cell_value = (int *)col->data[j];
+                        if (*cell_value == *((int *)value)) {
+                            return 1;
+                        } // Value found
                     break;
                 default:
                     printf("Unsupported data type.\n");
@@ -813,7 +829,7 @@ int count_cells_equal_to_x(DATAFRAME *df, int x) {
     for (unsigned int i = 0; i < df->num_columns; i++) {
         COLUMN *col = df->columns[i];
         // Check if the column type is INT
-        if (col->column_type == INT) {
+        if (col->column_type == INT || col->column_type == STRUCTURE) {
             // Iterate over each value in the column
             for (unsigned int j = 0; j < col->size; j++) {
                 int *cell_value = (int *)col->data[j];
@@ -834,7 +850,7 @@ int count_cells_greater_than_x(DATAFRAME *df, int x) {
     for (unsigned int i = 0; i < df->num_columns; i++) {
         COLUMN *col = df->columns[i];
         // Check if the column type is INT
-        if (col->column_type == INT) {
+        if (col->column_type == INT || col->column_type == STRUCTURE) {
             // Iterate over each value in the column
             for (unsigned int j = 0; j < col->size; j++) {
                 int *cell_value = (int *)col->data[j];
@@ -855,7 +871,7 @@ int count_cells_less_than_x(DATAFRAME *df, int x) {
     for (unsigned int i = 0; i < df->num_columns; i++) {
         COLUMN *col = df->columns[i];
         // Check if the column type is INT
-        if (col->column_type == INT) {
+        if (col->column_type == INT || col->column_type == STRUCTURE) {
             // Iterate over each value in the column
             for (unsigned int j = 0; j < col->size; j++) {
                 int *cell_value = (int *)col->data[j];
@@ -985,6 +1001,12 @@ int compare_values(COLUMN *col, int index1, int index2, int sort_dir) {
             } else {
                 return strcmp(col->data[col->index[index1]]->string_value, col->data[col->index[index2]]->string_value) < 0;
             }
+        case STRUCTURE:
+            if (sort_dir == ASC) {
+                return col->data[col->index[index1]]->struct_value > col->data[col->index[index2]]->struct_value;
+            } else {
+                return col->data[col->index[index1]]->struct_value < col->data[col->index[index2]]->struct_value;
+            }
         default:
             printf("Unsupported data type for sorting.\n");
             return 0;
@@ -1022,6 +1044,9 @@ void print_sorted_column(COLUMN *col) {
                 break;
                 case STRING:
                     printf("%s ", value->string_value);
+                break;
+                case STRUCTURE:
+                    printf("%d ", value->int_value);
                 break;
                 default:
                     printf("Unsupported data type.\n");
@@ -1136,6 +1161,11 @@ int search_value_in_column(COLUMN *col) {
                 else if (strcmp((char *)value, (char *)val) < 0) left = mid + 1;
                 else right = mid - 1;
                 break;
+            case STRUCTURE:
+                if (*((int *)value) == *((int *)val)) return 1;
+                else if (*((int *)value) < *((int *)val)) left = mid + 1;
+                else right = mid - 1;
+                break;
             default:
                 printf("Unsupported data type for search.\n");
                 return 0;
@@ -1163,22 +1193,25 @@ void search_value_in_dataframe_with_user_input(DATAFRAME *df) {
     switch (column_type) {
         case UINT:
             value = malloc(sizeof(unsigned int));
-        break;
+            break;
         case INT:
             value = malloc(sizeof(int));
-        break;
+            break;
         case CHAR:
             value = malloc(sizeof(char));
-        break;
+            break;
         case FLOAT:
             value = malloc(sizeof(float));
-        break;
+            break;
         case DOUBLE:
             value = malloc(sizeof(double));
-        break;
+            break;
         case STRING:
             value = malloc(MAX_STRING_LENGTH * sizeof(char)); // Assuming MAX_STRING_LENGTH is defined
-        break;
+            break;
+        case STRUCTURE:
+            value = malloc(sizeof(int));
+            break;
         default:
             printf("Invalid value type selected.\n");
         return;
@@ -1201,28 +1234,32 @@ void search_value_in_dataframe_with_user_input(DATAFRAME *df) {
 void get_search_value(void *value, int column_type) {
     switch (column_type) {
         case UINT:
-            printf("Enter the unsigned integer value to search: ");
+            printf("Enter the unsigned integer value to search/set: ");
         scanf("%u", (unsigned int *)value);
         break;
         case INT:
-            printf("Enter the integer value to search: ");
+            printf("Enter the integer value to search/set: ");
         scanf("%d", (int *)value);
         break;
         case CHAR:
-            printf("Enter the character value to search: ");
+            printf("Enter the character value to search/set: ");
         scanf(" %c", (char *)value); // Note the space before %c to consume any leading whitespace
         break;
         case FLOAT:
-            printf("Enter the float value to search: ");
+            printf("Enter the float value to search/set: ");
         scanf("%f", (float *)value);
         break;
         case DOUBLE:
-            printf("Enter the double value to search: ");
+            printf("Enter the double value to search/set: ");
         scanf("%lf", (double *)value);
         break;
         case STRING:
-            printf("Enter the string value to search: ");
+            printf("Enter the string value to search/set: ");
         scanf("%s", (char *)value); // Note: This assumes a single word without spaces
+        break;
+        case STRUCTURE:
+            printf("Enter the integer value to search/set: ");
+            scanf("%d", (int *)value);
         break;
         default:
             printf("Unsupported data type for search.\n");
@@ -1238,7 +1275,7 @@ void set_value_in_dataframe_with_user_input(DATAFRAME *df) {
 
     // Ask the user to select the search value type
     int column_type,row,columns;
-    printf("Select the type of value to set (2: UINT, 3: INT, 4: CHAR, 5: FLOAT, 6: DOUBLE, 7: STRING): ");
+    printf("Select the type of the new val columns (2: UINT, 3: INT, 4: CHAR, 5: FLOAT, 6: DOUBLE, 7: STRING): ");
     scanf("%d", &column_type);
 
     // Allocate memory for the search value
@@ -1261,6 +1298,9 @@ void set_value_in_dataframe_with_user_input(DATAFRAME *df) {
         break;
         case STRING:
             value = malloc(MAX_STRING_LENGTH * sizeof(char)); // Assuming MAX_STRING_LENGTH is defined
+        break;
+        case STRUCTURE:
+            value = malloc(sizeof(int));
         break;
         default:
             printf("Invalid value type selected.\n");
