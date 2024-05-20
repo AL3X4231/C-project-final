@@ -129,7 +129,7 @@ unsigned int count_occurrences(COLUMN *col, void *value) {
                     count++;
                 }
             break;
-            // Add cases for other data types as needed...
+            // Add cases for other data types as needed
             default:
                 printf("Unsupported data type.\n");
         }
@@ -207,7 +207,7 @@ unsigned int count_values_less_than(COLUMN *col, void *value) {
                     count++;
                 }
             break;
-            // Add cases for other data types as needed...
+            // Add cases for other data types as needed
             default:
                 printf("Unsupported data type.\n");
         }
