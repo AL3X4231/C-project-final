@@ -6,6 +6,245 @@
 #define ASC 0
 #define DESC 1
 
+COLUMN *create_column(ENUM_TYPE type, char *title) {
+    COLUMN *col = malloc(sizeof(COLUMN));
+    if (col == NULL) {
+        printf("Memory allocation failed.\n");
+        exit(1);
+    }
+    col->title = strdup(title); // Duplicate the title string
+    col->size = 0;
+    col->max_size = 0;
+    col->column_type = type;
+    col->data = NULL;
+    col->index = NULL;
+    return col;
+}
+
+int insert_value(COLUMN *col, void *value) {
+    if (col == NULL) {
+        printf("Column does not exist.\n");
+        return 0;
+    }
+
+    // Check if the data array needs reallocation
+    if (col->size == col->max_size) {
+        col->max_size += 256;
+        col->data = realloc(col->data, col->max_size * sizeof(COL_TYPE*));
+        if (col->data == NULL) {
+            printf("Memory reallocation failed.\n");
+            exit(1);
+        }
+    }
+
+    // Allocate memory for the value and insert it into the column
+    col->data[col->size] = malloc(sizeof(COL_TYPE));
+    if (col->data[col->size] == NULL) {
+        printf("Memory allocation failed.\n");
+        exit(1);
+    }
+    memcpy(col->data[col->size], value, sizeof(COL_TYPE));
+    col->size++;
+    return 1;
+}
+
+void delete_column(COLUMN **col) {
+    if (*col == NULL) {
+        printf("Column does not exist.\n");
+        return;
+    }
+    // Free memory allocated for title
+    free((*col)->title);
+    // Free memory allocated for each data element
+    for (unsigned int i = 0; i < (*col)->size; i++) {
+        free((*col)->data[i]);
+    }
+    // Free memory allocated for the data array and index array
+    free((*col)->data);
+    free((*col)->index);
+    // Free memory allocated for the column structure
+    free(*col);
+    *col = NULL;
+}
+
+void print_col(COLUMN *col) {
+    if (col == NULL) {
+        printf("Column does not exist.\n");
+        return;
+    }
+    printf("Column Title: %s\n", col->title);
+    printf("Column Values:\n");
+    for (unsigned int i = 0; i < col->size; i++) {
+        printf("[%u] ", i);
+        switch (col->column_type) {
+            case UINT:
+                printf("%u\n", col->data[i]->uint_value);
+                break;
+            case INT:
+                printf("%d\n", col->data[i]->int_value);
+                break;
+            case CHAR:
+                printf("%c\n", col->data[i]->char_value);
+                break;
+            case FLOAT:
+                printf("%f\n", col->data[i]->float_value);
+                break;
+            case DOUBLE:
+                printf("%lf\n", col->data[i]->double_value);
+                break;
+            case STRING:
+                printf("%s\n", col->data[i]->string_value);
+                break;
+            case STRUCTURE:
+                // Logic for displaying structured data
+                break;
+            default:
+                printf("Unsupported data type.\n");
+        }
+    }
+}
+
+unsigned int count_occurrences(COLUMN *col, void *value) {
+    if (col == NULL) {
+        printf("Column does not exist.\n");
+        return 0;
+    }
+
+    unsigned int count = 0;
+    for (unsigned int i = 0; i < col->size; i++) {
+        switch (col->column_type) {
+            case UINT:
+                if (col->data[i]->uint_value == *((unsigned int *)value)) {
+                    count++;
+                }
+            break;
+            case INT:
+                if (col->data[i]->int_value == *((int *)value)) {
+                    count++;
+                }
+            break;
+            case CHAR:
+                if (col->data[i]->char_value == *((char *)value)) {
+                    count++;
+                }
+            break;
+            // Add cases for other data types as needed
+            default:
+                printf("Unsupported data type.\n");
+        }
+    }
+    return count;
+}
+
+void *get_value_at_position(COLUMN *col, unsigned int position) {
+    if (col == NULL) {
+        printf("Column does not exist.\n");
+        return NULL;
+    }
+
+    if (position >= col->size) {
+        printf("Position out of bounds.\n");
+        return NULL;
+    }
+
+    return col->data[position];
+}
+
+unsigned int count_values_greater_than(COLUMN *col, void *value) {
+    if (col == NULL) {
+        printf("Column does not exist.\n");
+        return 0;
+    }
+
+    unsigned int count = 0;
+    for (unsigned int i = 0; i < col->size; i++) {
+        switch (col->column_type) {
+            case UINT:
+                if (col->data[i]->uint_value > *((unsigned int *)value)) {
+                    count++;
+                }
+            break;
+            case INT:
+                if (col->data[i]->int_value > *((int *)value)) {
+                    count++;
+                }
+            break;
+            case FLOAT:
+                if (col->data[i]->float_value > *((float *)value)) {
+                    count++;
+                }
+            break;
+            // Add cases for other data types as needed...
+            default:
+                printf("Unsupported data type.\n");
+        }
+    }
+    return count;
+}
+
+unsigned int count_values_less_than(COLUMN *col, void *value) {
+    if (col == NULL) {
+        printf("Column does not exist.\n");
+        return 0;
+    }
+
+    unsigned int count = 0;
+    for (unsigned int i = 0; i < col->size; i++) {
+        switch (col->column_type) {
+            case UINT:
+                if (col->data[i]->uint_value < *((unsigned int *)value)) {
+                    count++;
+                }
+            break;
+            case INT:
+                if (col->data[i]->int_value < *((int *)value)) {
+                    count++;
+                }
+            break;
+            case FLOAT:
+                if (col->data[i]->float_value < *((float *)value)) {
+                    count++;
+                }
+            break;
+            // Add cases for other data types as needed
+            default:
+                printf("Unsupported data type.\n");
+        }
+    }
+    return count;
+}
+
+unsigned int count_values_equal_to(COLUMN *col, void *value) {
+    if (col == NULL) {
+        printf("Column does not exist.\n");
+        return 0;
+    }
+
+    unsigned int count = 0;
+    for (unsigned int i = 0; i < col->size; i++) {
+        switch (col->column_type) {
+            case UINT:
+                if (col->data[i]->uint_value == *((unsigned int *)value)) {
+                    count++;
+                }
+            break;
+            case INT:
+                if (col->data[i]->int_value == *((int *)value)) {
+                    count++;
+                }
+            break;
+            case FLOAT:
+                if (col->data[i]->float_value == *((float *)value)) {
+                    count++;
+                }
+            break;
+            // Add cases for other data types as needed...
+            default:
+                printf("Unsupported data type.\n");
+        }
+    }
+    return count;
+}
 
 
 DATAFRAME *create_empty_dataframe() {

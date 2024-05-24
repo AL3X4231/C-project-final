@@ -32,4 +32,26 @@ int count_cells_less_than_x(DATAFRAME *df, int x);
 void search_value_in_dataframe_with_user_input(DATAFRAME *df);
 void set_value_in_dataframe_with_user_input(DATAFRAME *df);
 
+COLUMN *create_column(ENUM_TYPE type, char *title);
+int insert_value(COLUMN *col, void *value);
+void delete_column(COLUMN **col);
+void print_col(COLUMN *col);
+unsigned int count_occurrences(COLUMN *col, void *value);
+void *get_value_at_position(COLUMN *col, unsigned int position);
+unsigned int count_values_greater_than(COLUMN *col, void *value);
+unsigned int count_values_less_than(COLUMN *col, void *value);
+unsigned int count_values_equal_to(COLUMN *col, void *value);
+void sort(COLUMN *col, int sort_dir);
+int insertion_sort_index(COLUMN *col, int sort_dir);
+int compare_values(COLUMN *col, int index1, int index2, int sort_dir);
+void print_sorted_column(COLUMN *col);
+void erase_index(COLUMN *col);
+int check_index(COLUMN *col);
+void update_index(COLUMN *col);
+int search_value_in_column(COLUMN *col);
+
+
+#endif
+=======
 #endif // CDATAFRAME_H
+
