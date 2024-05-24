@@ -16,6 +16,9 @@ typedef enum {
 } ENUM_TYPE;
 
 // Union pour stocker différents types de données
+
+// Union pour stocker plusieurs types de donnée
+
 typedef union {
     unsigned int uint_value;
     signed int int_value;
