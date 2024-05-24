@@ -17,8 +17,8 @@ COLUMN *create_column(ENUM_TYPE type, char *title) {
     col->size = 0;
     col->max_size = 0;
     col->column_type = type;
-    col->data = NULL; // Initialize data pointer to NULL
-    col->index = NULL; // Initialize index pointer to NULL
+    col->data = NULL;
+    col->index = NULL;
     return col;
 }
 
